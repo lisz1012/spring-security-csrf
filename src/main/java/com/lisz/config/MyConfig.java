@@ -18,15 +18,15 @@ import java.io.IOException;
 public class MyConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-//		http.csrf()
-//				.csrfTokenRepository(new HttpSessionCsrfTokenRepository()); //不忘往Cookie里写，往Session里面写
-		http.authorizeRequests().anyRequest().authenticated()
+		// 哪些 地址需要登录
+		http.authorizeRequests()
+			.anyRequest().authenticated() //所有请求都需要验证
 			.and()
-		    .formLogin().loginPage("/login.html")
+		        .formLogin().loginPage("/login.html")//自定义登录页
 				.loginProcessingUrl("/login")
 				.permitAll()
-				.failureForwardUrl("/login.html?error")
-				.defaultSuccessUrl("/ok", true)
+				.failureForwardUrl("/login.html?error")  // 登录失败 页面
+				.defaultSuccessUrl("/ok", true)  // 登录成功跳转的页面
 				.failureHandler(new AuthenticationFailureHandler() {
 					@Override
 					public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
@@ -34,9 +34,9 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 						request.getRequestDispatcher(request.getRequestURL().toString()).forward(request, response);
 					}
 				})
-			.and()
+			.and() //默认 所有的post请求 都会拦截, 看看有没有带token
 			.csrf()
-			.csrfTokenRepository(new HttpSessionCsrfTokenRepository());
+			.csrfTokenRepository(new HttpSessionCsrfTokenRepository()); //不往Cookie里写，往Session里面写
 
 	}
 }
