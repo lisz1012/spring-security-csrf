@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+  登录
+<form action="/login" method="post">
+    Username: <input name="username" /> <br>
+    Password: <input name="password" type="password" /><br>
+    Token: <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <button type="submit">登录</button>
+</form>
+</body>
+</html>
