@@ -11,6 +11,7 @@ import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.AuthenticationException;
@@ -57,7 +58,7 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 		System.out.println(pass2);
 		// 哪些 地址需要登录
 		http.authorizeRequests()
-			.antMatchers("/img/**").permitAll() // img目录下的静态资源都不需要验证了
+			//.antMatchers("/img/**").permitAll() // img目录下的静态资源都不需要验证了
 			.anyRequest().authenticated() //所有请求都需要验证
 			.and()
 		        .formLogin().loginPage("/login.html")//自定义登录页
@@ -88,6 +89,11 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 			.and() //默认 所有的post请求 都会拦截, 看看有没有带token
 			.csrf()
 			.csrfTokenRepository(new HttpSessionCsrfTokenRepository()); //不往Cookie里写，往Session里面写
+	}
+
+	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring().antMatchers("/img/**");
 	}
 
 	// 账号密码存在内存里
