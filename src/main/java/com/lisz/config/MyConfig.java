@@ -1,9 +1,12 @@
 package com.lisz.config;
 
+import com.lisz.service.MyUserDetailsService;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -60,6 +63,13 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 					public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
 						exception.printStackTrace();
 						//登录的时候账号或密码出错，则会抛出BadCredentialsException，可以用instanceof判断各种情况作出处理
+						if (exception instanceof CredentialsExpiredException ||
+							exception instanceof LockedException) {
+							request.getSession().setAttribute("errorMessage", exception.getMessage());
+						} else if (exception.getCause() instanceof CredentialsExpiredException ||
+								exception.getCause() instanceof LockedException) {
+							request.getSession().setAttribute("errorMessage", exception.getCause().getMessage());
+						}
 						request.getRequestDispatcher(request.getRequestURL().toString()).forward(request, response);
 						// 记录登录失败次数 禁止登录
 					}
@@ -101,15 +111,32 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 
 	// 把账号和密码放在数据库里，每次启动要删掉，因为每次都会尝试新建
 	// 数据库要准备好，建表语句在：org.springframework.security.core.userdetails.jdbc的users.ddl里
-	@Bean
-	public UserDetailsService userDetailsService(){
-		JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
-		manager.createUser(User
-				.withUsername("xiaoming2")
-				.password(passwordEncoder.encode("xx")) // 每次加密后的密码不一样，因为盐不一样，BCryptPasswordEncoder有哦你个Random生成盐
-				.roles("admin", "user")
-				.build());
-		return manager;
+//	@Bean
+//	public UserDetailsService userDetailsService(){
+//		JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
+//		manager.createUser(User
+//				.withUsername("xiaoming2")
+//				.password(passwordEncoder.encode("xx")) // 每次加密后的密码不一样，因为盐不一样，BCryptPasswordEncoder有哦你个Random生成盐
+//				.roles("admin", "user")
+//				.build());
+//		return manager;
+//	}
+
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//		JdbcUserDetailsManager manager = auth
+//				.jdbcAuthentication()
+//				.dataSource(dataSource).getUserDetailsService();
+//		if (manager.userExists("xiaoming3")){
+//			manager.deleteUser("xiaoming3");
+//		}
+//		manager.createUser(User
+//				.withUsername("xiaoming3")
+//				.password(passwordEncoder.encode("aaa"))
+//				.roles("bbb") // 角色要指定
+//				.build());
+		auth.userDetailsService(new MyUserDetailsService());
 	}
 
 	// 有这个Bean之后用上面的123 和 321 就能登录成功了
