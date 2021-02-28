@@ -3,3 +3,7 @@ spring:
     user:
       name: lisz
       password: 123
+  datasource:
+    username: root
+    password: ^abc123$
+    url: jdbc:mysql://localhost:3306/mq?characterEncoding=utf8&useSSL=false&serverTimezone=GMT-7&allowPublicKeyRetrieval=true&allowMultiQueries=true

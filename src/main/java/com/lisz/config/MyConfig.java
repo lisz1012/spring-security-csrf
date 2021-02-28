@@ -1,5 +1,6 @@
 package com.lisz.config;
 
+import com.mysql.cj.jdbc.MysqlDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +17,14 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -30,6 +33,10 @@ import java.util.Collections;
 public class MyConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	// Springboot自动读取配置文件之后注入
+	@Autowired
+	private DataSource dataSource;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -77,17 +84,30 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 //	}
 
 	// 测试这里的时候最好把上面的 protected void configure(AuthenticationManagerBuilder auth) throws Exception 注释掉， 谢谢
+//	@Bean
+//	public UserDetailsService userDetailsService(){
+//		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+//		User user = new User("a", passwordEncoder.encode("1"),
+//				true, true, true, true,
+//				Collections.singletonList(new SimpleGrantedAuthority("xx")));
+//		manager.createUser(user);
+//		manager.createUser(User
+//					.withUsername("xiaoming")
+//					.password(passwordEncoder.encode("xx")) // 下面有Encoder所以这里必须要加密
+//					.roles("xxz") // 必须指定角色
+//				.build());
+//		return manager;
+//	}
+
+	// 把账号和密码放在数据库里，每次启动要删掉，因为每次都会尝试新建
+	// 数据库要准备好，建表语句在：org.springframework.security.core.userdetails.jdbc的users.ddl里
 	@Bean
 	public UserDetailsService userDetailsService(){
-		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-		User user = new User("a", passwordEncoder.encode("1"),
-				true, true, true, true,
-				Collections.singletonList(new SimpleGrantedAuthority("xx")));
-		manager.createUser(user);
+		JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
 		manager.createUser(User
-					.withUsername("xiaoming")
-					.password(passwordEncoder.encode("xx")) // 下面有Encoder所以这里必须要加密
-					.roles("xxz") // 必须指定角色
+				.withUsername("xiaoming2")
+				.password(passwordEncoder.encode("xx")) // 每次加密后的密码不一样，因为盐不一样，BCryptPasswordEncoder有哦你个Random生成盐
+				.roles("admin", "user")
 				.build());
 		return manager;
 	}
