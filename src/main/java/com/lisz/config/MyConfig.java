@@ -5,6 +5,8 @@ import com.mysql.cj.jdbc.MysqlDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -41,6 +43,12 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private DataSource dataSource;
 
+	@Autowired
+	private MyUserDetailsService myUserDetailsService;
+
+	@Autowired
+	private AuthenticationProvider authenticationProvider;
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		String pass1 = passwordEncoder.encode("123");
@@ -49,6 +57,7 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 		System.out.println(pass2);
 		// 哪些 地址需要登录
 		http.authorizeRequests()
+			.antMatchers("/img/**").permitAll() // img目录下的静态资源都不需要验证了
 			.anyRequest().authenticated() //所有请求都需要验证
 			.and()
 		        .formLogin().loginPage("/login.html")//自定义登录页
@@ -64,10 +73,12 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 						exception.printStackTrace();
 						//登录的时候账号或密码出错，则会抛出BadCredentialsException，可以用instanceof判断各种情况作出处理
 						if (exception instanceof CredentialsExpiredException ||
-							exception instanceof LockedException) {
+							exception instanceof LockedException ||
+							exception instanceof BadCredentialsException) {
 							request.getSession().setAttribute("errorMessage", exception.getMessage());
 						} else if (exception.getCause() instanceof CredentialsExpiredException ||
-								exception.getCause() instanceof LockedException) {
+								exception.getCause() instanceof LockedException ||
+								exception.getCause() instanceof BadCredentialsException) {
 							request.getSession().setAttribute("errorMessage", exception.getCause().getMessage());
 						}
 						request.getRequestDispatcher(request.getRequestURL().toString()).forward(request, response);
@@ -136,7 +147,8 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 //				.password(passwordEncoder.encode("aaa"))
 //				.roles("bbb") // 角色要指定
 //				.build());
-		auth.userDetailsService(new MyUserDetailsService());
+		auth.userDetailsService(myUserDetailsService)
+		.and().authenticationProvider(authenticationProvider);
 	}
 
 	// 有这个Bean之后用上面的123 和 321 就能登录成功了

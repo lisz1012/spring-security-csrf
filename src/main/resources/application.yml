@@ -7,3 +7,6 @@ spring:
     username: root
     password: ^abc123$
     url: jdbc:mysql://localhost:3306/mq?characterEncoding=utf8&useSSL=false&serverTimezone=GMT-7&allowPublicKeyRetrieval=true&allowMultiQueries=true
+#  web:
+#    resources:
+#      static-locations: classpath:/templates/,classpath:/static/,classpath:/static/img

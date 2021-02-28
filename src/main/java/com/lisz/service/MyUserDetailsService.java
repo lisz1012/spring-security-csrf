@@ -5,9 +5,11 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
+@Service
 public class MyUserDetailsService implements UserDetailsService {
 	// 按说应该在这里查询数据库
 	@Override
