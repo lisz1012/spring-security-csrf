@@ -15,7 +15,7 @@ import java.util.Base64;
 
 @Configuration
 @EnableWebSecurity
-public class MyConfig2 extends WebSecurityConfigurerAdapter {
+public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面，有很多的注视，说明了该怎么写代码做各种校验功能
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
