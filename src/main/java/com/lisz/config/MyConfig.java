@@ -5,6 +5,7 @@ import com.mysql.cj.jdbc.MysqlDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -34,8 +35,10 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Collections;
 
-@Configuration
-@EnableWebSecurity
+// 测试MyConfig2的时候就先抱着两个注解注释掉
+//@Configuration
+//@Order(1000)
+//@EnableWebSecurity
 public class MyConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -143,6 +146,7 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		// JDBC权限校验
 //		JdbcUserDetailsManager manager = auth
 //				.jdbcAuthentication()
 //				.dataSource(dataSource).getUserDetailsService();
@@ -154,13 +158,9 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 //				.password(passwordEncoder.encode("aaa"))
 //				.roles("bbb") // 角色要指定
 //				.build());
+
+		// 自定义权限校验
 		auth.userDetailsService(myUserDetailsService)
 		.and().authenticationProvider(authenticationProvider);
-	}
-
-	// 有这个Bean之后用上面的123 和 321 就能登录成功了
-	@Bean
-	public PasswordEncoder passwordEncoder(){
-		return new BCryptPasswordEncoder();
 	}
 }
