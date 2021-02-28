@@ -7,6 +7,7 @@ spring:
     username: root
     password: ^abc123$
     url: jdbc:mysql://localhost:3306/mq?characterEncoding=utf8&useSSL=false&serverTimezone=GMT-7&allowPublicKeyRetrieval=true&allowMultiQueries=true
+# 老版的 static-locations 配置路径似乎不管用了，官方标记废弃
 #  web:
 #    resources:
 #      static-locations: classpath:/templates/,classpath:/static/,classpath:/static/img

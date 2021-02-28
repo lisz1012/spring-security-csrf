@@ -91,6 +91,7 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 			.csrfTokenRepository(new HttpSessionCsrfTokenRepository()); //不往Cookie里写，往Session里面写
 	}
 
+	// 在configure(HttpSecurity http)之前做一次判断
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers("/img/**");
