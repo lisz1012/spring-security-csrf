@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -27,6 +28,7 @@ import java.util.Base64;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(securedEnabled = true)
 public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面，有很多的注视，说明了该怎么写代码做各种校验功能
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -104,13 +106,17 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		// session 登录  并发量高 -> jwt (无状态的)。当往Redis里面写的时候已经不能用这个了，必须得用jwt
 		auth.inMemoryAuthentication()
-				.withUser("123")
+				.withUser("111")
 				.password(passwordEncoder.encode("123"))
 				.roles("admin")
 			.and()
-				.withUser("321")
-				.password(passwordEncoder.encode("321"))
-				.roles("user");
+				.withUser("112")
+				.password(passwordEncoder.encode("123"))
+				.roles("user")
+			.and()
+				.withUser("113")
+				.password(passwordEncoder.encode("123"))
+				.roles("guest");
 	}
 
 	public static void main(String[] args) {
