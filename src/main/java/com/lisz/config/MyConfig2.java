@@ -3,14 +3,26 @@ package com.lisz.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Base64;
 
 @Configuration
@@ -25,12 +37,48 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 			// 下面两行设置某个IP无需登录。封IP可以在springboot上坐，用Filter，应该在Linux运维级别或者nginx这里拦住，请求打在Tomcat上，已经是重量级的了。新的react模型就是基于Netty和Servlet 3.1的
 			// 拦截和缓存最好前置.https://blog.csdn.net/neweastsun/article/details/104727863 Filter比HandlerInterceptor优先执行，因为前者是JavaEE级别的，或者是SpringMVC级别的
 			//.antMatchers("url").hasIpAddress("192.168.1.102")
-				.antMatchers("/**/*")
-				.access("hasIpAddress('192.168.1.102')") // 这里不能用 127.0.0.1, 否则还是会被要求登录
-			.anyRequest() //所有请求都需要验证
-			.authenticated()
+//				.antMatchers("/**/*")
+//				.access("hasIpAddress('192.168.1.102')") // 这里不能用 127.0.0.1, 否则还是会被要求登录
+//			.anyRequest() //所有请求都需要验证
+//			.authenticated()
+			// 把角色和权限进行了匹配 角色 -> URL
+			.antMatchers("/admin/**").hasRole("admin")
+			.antMatchers("/user/**").hasRole("user")
 			.and()
-				.formLogin() // 提供登录表单
+				.formLogin().loginPage("/login.html")//自定义登录页
+				.loginProcessingUrl("/login")
+				.permitAll()
+				.failureForwardUrl("/login.html?error")  // 登录失败 页面
+				.defaultSuccessUrl("/login_success", true)
+				.usernameParameter("xx")
+				.passwordParameter("oo")
+//				.successHandler(new AuthenticationSuccessHandler() {
+//					@Override
+//					public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+//						System.out.println("登录成功");
+//						Object user = authentication.getPrincipal();
+//						System.out.println(user);
+//					}
+//				})
+				.failureHandler(new AuthenticationFailureHandler() {
+					@Override
+					public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+						// 登录失败
+						// 分析失败原因，统计失败次数
+					}
+				})
+			.and()
+				.logout().addLogoutHandler(new LogoutHandler() {
+					@Override
+					public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+						System.out.println("轻轻地我走了");
+					}
+				}).addLogoutHandler(new LogoutHandler() {
+					@Override
+					public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+						System.out.println("不带走一片云彩");
+					}
+			}) //推出逻辑处理器，可以用来清理各种资源
 			// 异地登录就把以前的踢下线, 前面的Session会失效 (跟下面的rememberMe冲突，必须注掉其中一个)
 			.and()
 				.sessionManagement()
@@ -47,7 +95,9 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 //				.rememberMe()
 //				.tokenValiditySeconds(60) // 记多长时间(秒)
 			.and().and()
-				.csrf().disable();
+				.csrf()
+				.csrfTokenRepository(new HttpSessionCsrfTokenRepository()); //不往Cookie里写，往Session里面写。配合前端的<input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+			  //.disable();
 	}
 
 	@Override
@@ -69,8 +119,15 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 	}
 
 	// 及时清理过期的Session，好像有时也用不着
-//	@Bean
-//	public HttpSessionEventPublisher httpSessionEventPublisher(){
-//		return new HttpSessionEventPublisher();
-//	}
+	@Bean
+	public HttpSessionEventPublisher httpSessionEventPublisher(){
+		return new HttpSessionEventPublisher();
+	}
+
+	@Bean
+	public RoleHierarchy roleHierarchy(){
+		RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+		roleHierarchy.setHierarchy("ROLE_admin > ROLE_user");
+		return roleHierarchy;
+	}
 }

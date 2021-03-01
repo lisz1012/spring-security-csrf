@@ -91,7 +91,7 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 				})
 			.and() //默认 所有的post请求 都会拦截, 看看有没有带token
 			.csrf()
-			.csrfTokenRepository(new HttpSessionCsrfTokenRepository()); //不往Cookie里写，往Session里面写
+			.csrfTokenRepository(new HttpSessionCsrfTokenRepository()); //不往Cookie里写，往Session里面写. 配合前端的<input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 	}
 
 	// 在configure(HttpSecurity http)之前做一次判断
@@ -101,18 +101,18 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	// 账号密码存在内存里
-//	@Override
-//	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//		// session 登录  并发量高 -> jwt (无状态的)。当往Redis里面写的时候已经不能用这个了，必须得用jwt
-//		auth.inMemoryAuthentication()
-//				.withUser("123")
-//				.password(passwordEncoder.encode("123"))
-//				.roles("admin")
-//			.and()
-//				.withUser("321")
-//				.password(passwordEncoder.encode("321"))
-//				.roles("user");
-//	}
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		// session 登录  并发量高 -> jwt (无状态的)。当往Redis里面写的时候已经不能用这个了，必须得用jwt
+		auth.inMemoryAuthentication()
+				.withUser("123")
+				.password(passwordEncoder.encode("123"))
+				.roles("admin")
+			.and()
+				.withUser("321")
+				.password(passwordEncoder.encode("321"))
+				.roles("user");
+	}
 
 	// 测试这里的时候最好把上面的 protected void configure(AuthenticationManagerBuilder auth) throws Exception 注释掉， 谢谢
 //	@Bean
@@ -144,9 +144,9 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 //	}
 
 
-	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		// JDBC权限校验
+//	@Override
+//	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//		// JDBC权限校验。开启的同时，把下面的自定义权限校验注释掉
 //		JdbcUserDetailsManager manager = auth
 //				.jdbcAuthentication()
 //				.dataSource(dataSource).getUserDetailsService();
@@ -158,9 +158,9 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 //				.password(passwordEncoder.encode("aaa"))
 //				.roles("bbb") // 角色要指定
 //				.build());
-
-		// 自定义权限校验
-		auth.userDetailsService(myUserDetailsService)
-		.and().authenticationProvider(authenticationProvider);
-	}
+//
+//		// 自定义权限校验, 开启的同时，把上面的JDBC权限校验注释掉
+//		auth.userDetailsService(myUserDetailsService)
+//		.and().authenticationProvider(authenticationProvider);
+//	}
 }
