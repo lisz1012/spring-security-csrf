@@ -10,7 +10,9 @@
 <form action="/login" method="post">
     Username: <input name="xx" /> <br>
     Password: <input name="oo" type="password" /><br>
-    Token: <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    Token: <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /><br />
+    <img src="/kaptcha" /><br />
+    验证码: <input name="code" type="text" /><br />
     <button type="submit">登录</button>
 </form>
 </body>

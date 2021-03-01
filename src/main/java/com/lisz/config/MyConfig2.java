@@ -1,5 +1,9 @@
 package com.lisz.config;
 
+import com.google.code.kaptcha.Producer;
+import com.google.code.kaptcha.impl.DefaultKaptcha;
+import com.google.code.kaptcha.text.impl.DefaultTextCreator;
+import com.lisz.filter.CodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,11 +19,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.security.web.session.SessionInformationExpiredStrategy;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +38,7 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		http.addFilterBefore(new CodeFilter(), UsernamePasswordAuthenticationFilter.class);
 		http.authorizeRequests()
 			// 下面两行设置某个IP无需登录。封IP可以在springboot上坐，用Filter，应该在Linux运维级别或者nginx这里拦住，请求打在Tomcat上，已经是重量级的了。新的react模型就是基于Netty和Servlet 3.1的
 			// 拦截和缓存最好前置.https://blog.csdn.net/neweastsun/article/details/104727863 Filter比HandlerInterceptor优先执行，因为前者是JavaEE级别的，或者是SpringMVC级别的
