@@ -28,7 +28,7 @@ import java.util.Base64;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面，有很多的注视，说明了该怎么写代码做各种校验功能
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -43,9 +43,9 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 //				.access("hasIpAddress('192.168.1.102')") // 这里不能用 127.0.0.1, 否则还是会被要求登录
 //			.anyRequest() //所有请求都需要验证
 //			.authenticated()
-			// 把角色和权限进行了匹配 角色 -> URL
-			.antMatchers("/admin/**").hasRole("admin")
-			.antMatchers("/user/**").hasRole("user")
+			// 把角色和权限进行了匹配 角色 -> URL Controller里面有@Secured和@Pre/PostAuthoized就可以不用写这里
+//			.antMatchers("/admin/**").hasRole("admin")
+//			.antMatchers("/user/**").hasRole("user")
 			.and()
 				.formLogin().loginPage("/login.html")//自定义登录页
 				.loginProcessingUrl("/login")
@@ -116,7 +116,11 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 			.and()
 				.withUser("113")
 				.password(passwordEncoder.encode("123"))
-				.roles("guest");
+				.roles("guest")
+			.and()
+				.withUser("114")
+				.password(passwordEncoder.encode("123"))
+				.roles("admin", "guest");
 	}
 
 	public static void main(String[] args) {
