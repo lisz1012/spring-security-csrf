@@ -4,6 +4,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,6 +51,11 @@ public class HiController {
 	// Spring EL表达式. 根据返回值判断有没有权限
 	@PostAuthorize("returnObject == 1") // 必须要同时有admin和guest角色
 	public int helloAdminPostAuthorize(){
+		// 在Filter或者interceptor中这么拿到authentication
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object user = authentication.getPrincipal();
+		System.out.println("来访者： " + user);
+		System.out.println("Auth: " + authentication);
 		// 一般会访问其他的子系统，把当前的角色信息带过去，那个子系统（远程服务）就会去识别信息，并决定能不能访问。能访问就执行正常的业务逻辑；
 		// 如果不能访问，则在这里也会根据返回值报错。也就是说权限并不在这一层服务判断
 		return new Random().nextInt(2);
