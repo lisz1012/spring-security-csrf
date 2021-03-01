@@ -22,7 +22,7 @@ public class MyConfig2 extends WebSecurityConfigurerAdapter { // 这个类里面
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-			// 设置某个IP无需登录。封IP可以在springboot上坐，用Filter，应该在Linux运维级别或者nginx这里拦住，请求打在Tomcat上，已经是重量级的了。新的react模型就是基于Netty和Servlet 3.1的
+			// 下面两行设置某个IP无需登录。封IP可以在springboot上坐，用Filter，应该在Linux运维级别或者nginx这里拦住，请求打在Tomcat上，已经是重量级的了。新的react模型就是基于Netty和Servlet 3.1的
 			// 拦截和缓存最好前置.https://blog.csdn.net/neweastsun/article/details/104727863 Filter比HandlerInterceptor优先执行，因为前者是JavaEE级别的，或者是SpringMVC级别的
 			//.antMatchers("url").hasIpAddress("192.168.1.102")
 				.antMatchers("/**/*")
